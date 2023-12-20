@@ -42,20 +42,30 @@ uintptr_t FindDMAAddy(HANDLE hProc, uintptr_t ptr, std::vector<unsigned int> off
 }
 int main()
 {
-    HWND hwnd_AC = FindWindowA(NULL, "Among Us");
-    DWORD pID = NULL;
-    GetWindowThreadProcessId(hwnd_AC, &pID);
-    uintptr_t moduleBase = GetModuleBase(pID, L"GameAssembly.dll");
-    HANDLE hProcces = 0;
-    hProcces = OpenProcess(PROCESS_ALL_ACCESS, NULL, pID);
-    uintptr_t dynamicptr = moduleBase + 0x0214D698;
-    std::vector<unsigned int> speedoffsets = { 0x40,0xBC,0x3C,0x5C,0x0,0x30,0x74 };
-    uintptr_t ammoAddr = FindDMAAddy(hProcces, dynamicptr, speedoffsets);
-    printf("ammoAddr : %p\n", ammoAddr);
-    float offset;
-    BOOL rpmResult = ReadProcessMemory(hProcces, (BYTE*)ammoAddr, &offset, sizeof(float), nullptr);
-        printf("Rpm result : %f \n", offset);
+//get pid
+HWND hwnd_AC = FindWindowA(NULL, "Among Us");
+DWORD pID = NULL;
+GetWindowThreadProcessId(hwnd_AC, &pID);
+
+//get module base
+uintptr_t moduleBase = GetModuleBase(pID, L"GameAssembly.dll");
+
+//handle for reading read procces memory func
+HANDLE hProcces = 0;
+hProcces = OpenProcess(PROCESS_ALL_ACCESS, NULL, pID);
+
+//get dynmaicptr
+uintptr_t dynamicptr = moduleBase + 0x0214D698;
+
+//prepare offset adress
+std::vector<unsigned int> speedoffsets = { 0x40,0xBC,0x3C,0x5C,0x0,0x30,0x74 };
+uintptr_t ammoAddr = FindDMAAddy(hProcces, dynamicptr, speedoffsets);
+printf("ammoAddr : %p \n", ammoAddr);
 
 
-    int speed = 0;
+//read memory value
+float speedvalue;
+BOOL rpmResult = ReadProcessMemory(hProcces, (BYTE*)ammoAddr, &speedvalue, sizeof(float), nullptr);
+printf("Rpm result : %f \n", speedvalue);
+std::cout << speedvalue; //2 type for printing value
 }
